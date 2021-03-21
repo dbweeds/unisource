@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="board">
+    <resultMap type="com.spring.board.vo.BoardVo" id="boardVo">
+    	<result property="boardType" 	column="BOARD_TYPE"/>
+    	<result property="boardNum" 	column="BOARD_NUM"/>
+    	<result property="boardTitle" 	column="BOARD_TITLE"/>
+    	<result property="boardComment" column="BOARD_COMMENT"/>
+    	<result property="boardWriter" column="BOARD_WRITER"/>
+    </resultMap>
+    <!-- 동적 SQL -->
+	<sql id="criteria">
+		<trim prefixOverrides="OR">
+			<foreach collection="menuList" item="type">
+				<trim prefix="OR">
+					BOARD_TYPE=#{type.codeId}
+				</trim>
+			</foreach>
+		</trim>
+	</sql>
+    <select id="boardList" parameterType="com.spring.board.vo.PageVo" resultMap="boardVo">
+        <![CDATA[
+        SELECT 
+		  BOARD_TYPE
+		  ,BOARD_NUM
+		  ,BOARD_TITLE
+		  ,BOARD_COMMENT
+		  ,TOTAL_CNT
+		FROM 
+		(
+		  SELECT
+		      	BOARD_TYPE
+				,BOARD_NUM
+				,BOARD_TITLE
+				,BOARD_COMMENT
+		      	,ROW_NUMBER() OVER(ORDER BY BOARD_NUM DESC) AS NUMROW
+		      	,COUNT(*) OVER() AS TOTAL_CNT
+			FROM
+				BOARD
+		]]>
+		<if test='menuList.size() != 0'>
+			where
+ 		</if>
+		<include refid="criteria"></include>
+		<![CDATA[
+		)
+		WHERE NUMROW BETWEEN (#{pageNo}-1)*10 + 1 AND (#{pageNo})*10
+		]]>
+    </select>
+    
+    
+    <select id="boardTotal" parameterType="com.spring.board.vo.PageVo" resultType="Integer">
+		<![CDATA[
+		  SELECT
+		      	COUNT(*) AS TOTAL_CNT
+			FROM
+				BOARD	
+		]]>
+		<if test='menuList.size() != 0'>
+			where
+ 		</if>
+		<include refid="criteria"></include>
+    </select>
+    	
+    <select id="boardView" parameterType="com.spring.board.vo.BoardVo" resultMap="boardVo">
+    	SELECT
+        	BOARD_TYPE
+			,BOARD_NUM
+			,BOARD_TITLE
+			,BOARD_COMMENT
+			,BOARD_WRITER
+		FROM
+			BOARD
+    	WHERE 	BOARD_TYPE = #{boardType}
+    	AND 	BOARD_NUM  = #{boardNum}
+    </select>	
+    
+    <select id="boardInsert" parameterType="com.spring.board.vo.BoardVo">
+        INSERT INTO 
+        BOARD
+        (BOARD_TYPE
+        ,BOARD_NUM
+        ,BOARD_TITLE
+        ,BOARD_COMMENT
+        ,BOARD_WRITER
+        ,CREATOR
+        ,CREATE_TIME
+        ,MODIFIER
+        ,MODIFIED_TIME
+        )
+        VALUES
+        (#{boardType}
+        ,(SELECT NVL(TO_NUMBER(MAX(BOARD_NUM)+1),1)
+	    	FROM BOARD
+	    	WHERE BOARD_TYPE = #{boardType})
+        ,#{boardTitle}
+        ,#{boardComment}
+        ,#{boardWriter}
+        ,'SYSTEM'
+        ,TO_CHAR(SYSDATE)
+        ,'SYSTEM'
+        ,TO_CHAR(SYSDATE)
+        )
+    </select>
+    <select id="boardUpdate" parameterType="com.spring.board.vo.BoardVo">
+    	update board 
+    	set board_title = #{boardTitle}
+    		,BOARD_COMMENT = #{boardComment}
+    	where board_type = #{boardType} 
+    	and board_num =  #{boardNum}
+    </select>
+    <select id="boardDelete" parameterType="com.spring.board.vo.BoardVo">
+    	delete 
+    	from 
+    		board 
+    	where 
+    		board_type = #{boardType} 
+    	and board_num =  #{boardNum}
+    </select>
+</mapper>

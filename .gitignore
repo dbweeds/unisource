@@ -1,4 +1,4 @@
-
+<<<<<<< HEAD
 /.metadata/
 =======
 
@@ -114,4 +114,4 @@ Servers/
 */.gitignore
 
 # End of https://www.toptal.com/developers/gitignore/api/eclipse,java,java-web,code-java
-
+>>>>>>> 9768a426b01614b1510a8ff2e7acc4c47179928e

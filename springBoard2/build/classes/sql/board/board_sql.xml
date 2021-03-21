@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="board">
+   
+    <select id="ProductGroupInfoList" resultType="com.spring.board.vo.ProductGroupInfoVo">
+        SELECT 
+		  *
+		FROM 
+			PRODUCTGROUPINFO
+    </select>
+    
+    <insert id="InsertProductInfo" parameterType="com.spring.board.vo.ProductInfoVo">
+        <selectKey keyProperty="PRDIDX" order="BEFORE" resultType="int">
+			SELECT NVL(TO_NUMBER(MAX(PRDIDX)+1),1)
+			    	FROM PRODUCTINFO
+		</selectKey>
+        insert into PRODUCTINFO(
+		    PRDIDX
+		    ,PRDNAME
+		    ,PRDPRC
+		    ,PRDVIEW
+		    ,PRDIMG
+		    )
+		    VALUES
+		    (#{PRDIDX}
+		    ,#{PRDNAME}
+		    ,#{PRDPRC}
+		    ,#{PRDVIEW}
+		    ,#{PRDIMG}
+		    )
+    </insert>
+    <select id="InsertProductGroupProduct" parameterType="com.spring.board.vo.ProductGroupProductVo">
+        insert into PRODUCTGROUPPRODUCT(
+		    PRDGRPRDIDX
+		    ,PRDGRIDX
+		    ,PRDIDX
+		    ,PRDGRPRDVIEW
+		    )
+		    VALUES
+		    ((SELECT NVL(TO_NUMBER(MAX(PRDGRPRDIDX)+1),1)
+			    	FROM PRODUCTGROUPPRODUCT)
+		    ,#{PRDGRIDX}
+		    ,#{PRDIDX}
+		    ,#{PRDGRPRDVIEW}
+		    )
+    </select>
+    <select id="InsertProductPatternDetail" parameterType="com.spring.board.vo.ProductPatternDetailVo">
+        insert into PRODUCTPATTERNDETAIL(
+		    PTDETAILIDX
+		    ,PRDGRIDX
+		    ,PRDPTIDX
+		    ,PTDETAILTYPE
+		    ,<if test='!PTDETAILIMG.equals("")'>PTDETAILIMG,</if>
+		    <if test='!PTDETAILDESC.equals("")'>PTDETAILDESC,</if>
+		    <if test='!PTDETAILMV.equals("")'>PTDETAILMV,</if>
+		    PTDETAILVIEW
+		    )
+		    VALUES
+		    ((SELECT NVL(TO_NUMBER(MAX(PTDETAILIDX)+1),1)
+			    	FROM PRODUCTPATTERNDETAIL)
+		    ,#{PRDGRIDX}
+		    ,#{PRDPTIDX}
+		    ,#{PTDETAILTYPE}
+		    ,<if test='!PTDETAILIMG.equals("")'>#{PTDETAILIMG},</if>
+		    <if test='!PTDETAILDESC.equals("")'>#{PTDETAILDESC},</if>
+		    <if test='!PTDETAILMV.equals("")'>#{PTDETAILMV},</if>
+		    #{PTDETAILVIEW}
+		    )
+    </select>
+    <insert id="InsertProductPatternInfo" parameterType="com.spring.board.vo.ProductPatternInfoVo">
+        <selectKey keyProperty="PRDPTIDX" order="BEFORE" resultType="int">
+			SELECT NVL(TO_NUMBER(MAX(PRDPTIDX)+1),1)
+			    	FROM PRODUCTPATTERNINFO 
+			    	where PRDGRIDX = #{PRDGRIDX}
+		</selectKey>
+        insert into PRODUCTPATTERNINFO(
+		    PRDPTIDX
+		    ,PRDGRIDX
+		    ,PRDPTTYPE
+		    ,PRDPTVIEW
+		    )
+		    VALUES
+		    (#{PRDPTIDX}
+		    ,#{PRDGRIDX}
+		    ,#{PRDPTIDX}
+		    ,'true'
+		    )
+    </insert>
+    <insert id="InsertProductGroupInfo" parameterType="com.spring.board.vo.ProductGroupInfoVo">
+         <selectKey keyProperty="PRDGRIDX" order="BEFORE" resultType="int">
+			SELECT NVL(TO_NUMBER(MAX(PRDGRIDX)+1),1)
+			    	FROM PRODUCTGROUPINFO
+		</selectKey>
+        insert into PRODUCTGROUPINFO(
+		    PRDGRIDX
+		    ,PRDGRCD
+		    ,PRDGRNAME
+		    ,PRDGRIMG
+		    ,PRDGRVIEW
+		    )
+		    VALUES
+		    (#{PRDGRIDX}
+		    ,'PRDGRCD_'||to_char(#{PRDGRIDX})
+		    ,#{PRDGRNAME}
+		    ,#{PRDGRIMG}
+		    ,#{PRDGRVIEW}
+		    )
+    </insert>
+</mapper>
